@@ -129,14 +129,6 @@ app.post('/program/saveprogram', function (req, res) {
 app.get('/program/getprogram', function (req, res) {
 
     let language = req.query.language;
-    let cat_arr = new Array();
-    let prog_arr = new Array();
-    let desc_arr = new Array();
-    let code_arr = new Array();
-    let output_arr = new Array();
-    let input_arr = new Array();
-    let runnable_arr = new Array();
-
     let query = "SELECT * FROM languages INNER JOIN program_details ON languages.id = program_details.lang_id where languages.lang_name = '"+language+"'";
 
     con.query(query, function (err, result, fields) {
