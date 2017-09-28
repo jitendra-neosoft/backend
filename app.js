@@ -4,13 +4,13 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const async = require('async');
 
-var con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "seqdb"
+var conection = mysql.createConnection({
+    host: process.env.host || "localhost",
+    user: process.env.user || "root",
+    password: process.env.password || "",
+    database: process.env.database || "seqdb"
 });
-con.connect(function (err) {
+conection.connect(function (err) {
     if (err) throw err;
     console.log("Connected!");
 });
@@ -26,12 +26,9 @@ app.use(function (req, res, next) {
     let appname = log.appname;
     let language = log.language;
     let timestamp = log.timestamp;
-    con.query("insert into requestlogs (id, versionno, client, appname, language, timestamp) values (?, ?, ?, ?, ?, ?)", [id, versionno, client, appname, language, new Date()], function (err, result, fields) {
-        if (err) {
-            return next();
-        }
+    conection.query("insert into requestlogs (id, versionno, client, appname, language, timestamp) values (?, ?, ?, ?, ?, ?)", [id, versionno, client, appname, language, new Date()], function (err, result, fields) {
         next();
-    })
+    });
 })
 
 app.post('/program/saveprogram', function (req, res) {
@@ -48,10 +45,9 @@ app.post('/program/saveprogram', function (req, res) {
     let output = req.body.output;
     let Isrunnable = req.body.Isrunnable;
 
-
     async.waterfall([
         function (done) {
-            con.query("SELECT max(id) as max FROM categories", function (err, result, fields) {
+            conection.query("SELECT max(id) as max FROM categories", function (err, result, fields) {
                 if (err) {
                     return done(err);
                 }
@@ -60,7 +56,7 @@ app.post('/program/saveprogram', function (req, res) {
             })
         },
         function (cat_id, done) {
-            con.query("insert into categories (id, cat_name, category_sequence, featureid) values (?, ?, ?, ?)", [cat_id, programcategory, 1, 1], function (err, result, fields) {
+            conection.query("insert into categories (id, cat_name, category_sequence, featureid) values (?, ?, ?, ?)", [cat_id, programcategory, 1, 1], function (err, result, fields) {
                 if (err) {
                     return done(err);
                 }
@@ -68,7 +64,7 @@ app.post('/program/saveprogram', function (req, res) {
             })
         },
         function (cat_id, done) {
-            con.query("SELECT max(id) as max FROM programs", function (err, result, fields) {
+            conection.query("SELECT max(id) as max FROM programs", function (err, result, fields) {
                 if (err) {
                     return done(err);
                 }
@@ -77,7 +73,7 @@ app.post('/program/saveprogram', function (req, res) {
             });
         },
         function (cat_id, prog_id, done) {
-            con.query("insert into programs(id, program_name, program_description, program_category, description_image_base64, description_image_url) values (?, ?, ?, ?, ?, ?)", [prog_id, programname, programdescription, cat_id, Descimagebase64, Descimageurl], function (err, result, fields) {
+            conection.query("insert into programs(id, program_name, program_description, program_category, description_image_base64, description_image_url) values (?, ?, ?, ?, ?, ?)", [prog_id, programname, programdescription, cat_id, Descimagebase64, Descimageurl], function (err, result, fields) {
                 if (err) {
                     return done(err);
                 }
@@ -85,7 +81,7 @@ app.post('/program/saveprogram', function (req, res) {
             })
         },
         function (cat_id, prog_id, done) {
-            con.query("SELECT max(id) as max FROM program_details", function (err, result, fields) {
+            conection.query("SELECT max(id) as max FROM program_details", function (err, result, fields) {
                 if (err) {
                     return done(err);
                 }
@@ -94,7 +90,7 @@ app.post('/program/saveprogram', function (req, res) {
             });
         },
         function (cat_id, prog_id, prog_det_id, done) {
-            con.query("insert into program_details(id, lang_id, prog_id, code, codewithoutcomments, codewithoutlogic, exampleoutput, difficultylevel, exampleoutputtype, isrunnable, canbeusedforchallenges) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [prog_det_id, '1', prog_id, code, '', '', exampleoutput, difficultyleve, '', Isrunnable, ''], function (err, result, fields) {
+            conection.query("insert into program_details(id, lang_id, prog_id, code, codewithoutcomments, codewithoutlogic, exampleoutput, difficultylevel, exampleoutputtype, isrunnable, canbeusedforchallenges) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [prog_det_id, '1', prog_id, code, '', '', exampleoutput, difficultyleve, '', Isrunnable, ''], function (err, result, fields) {
                 if (err) {
                     return done(err);
                 }
@@ -102,7 +98,7 @@ app.post('/program/saveprogram', function (req, res) {
             })
         },
         function (cat_id, prog_id, prog_det_id, done) {
-            con.query("SELECT max(id) as max FROM program_ios", function (err, result, fields) {
+            conection.query("SELECT max(id) as max FROM program_ios", function (err, result, fields) {
                 if (err) {
                     return done(err);
                 }
@@ -111,7 +107,7 @@ app.post('/program/saveprogram', function (req, res) {
             });
         },
         function (cat_id, prog_id, prog_det_id, io_id, done) {
-            con.query("insert into program_ios(id, prog_id, input, output) values (?, ?, ?, ?)", [io_id, prog_det_id, input, output], function (err, result, fields) {
+            conection.query("insert into program_ios(id, prog_id, input, output) values (?, ?, ?, ?)", [io_id, prog_det_id, input, output], function (err, result, fields) {
                 if (err) {
                     return done(err);
                 }
@@ -131,7 +127,7 @@ app.get('/program/getprogram', function (req, res) {
     let language = req.query.language;
     let query = "SELECT * FROM languages INNER JOIN program_details ON languages.id = program_details.lang_id where languages.lang_name = '"+language+"'";
 
-    con.query(query, function (err, result, fields) {
+    conection.query(query, function (err, result, fields) {
         if (err) {
             let error = {
                 "language": "",
@@ -147,7 +143,7 @@ app.get('/program/getprogram', function (req, res) {
             }
             return res.status(500).send(error);
         }
-        let sendData = {
+        let send_data = {
             language: '',
             category: [],
             name: [],
@@ -160,12 +156,12 @@ app.get('/program/getprogram', function (req, res) {
             reason: ''
         };
         result.forEach(function(element) {
-            sendData.program.push(element.code)
-            sendData.input.push(element.code);
-            sendData.output.push(element.exampleoutput);
-            sendData.runnable.push(element.isrunnable);
+            send_data.program.push(element.code)
+            send_data.input.push(element.code);
+            send_data.output.push(element.exampleoutput);
+            send_data.runnable.push(element.isrunnable);
         });
-        res.status(200).send(sendData);
+        res.status(200).send(send_data);
     });
 });
 
