@@ -125,42 +125,38 @@ app.post('/program/saveprogram', function (req, res) {
 app.get('/program/getprogram', function (req, res) {
 
     let language = req.query.language;
-    let query = "SELECT * FROM languages INNER JOIN program_details ON languages.id = program_details.lang_id where languages.lang_name = '"+language+"'";
 
-    conection.query(query, function (err, result, fields) {
-        if (err) {
-            let error = {
-                "language": "",
-                "category": [],
-                "name": [],
-                "desc": [],
-                "program": [],
-                "output": [],
-                "input": [],
-                "runnable": [],
-                "Message": "FAILURE",
-                "Reason": err
-            }
-            return res.status(500).send(error);
+    let send_data = {
+        language: language,
+        category: [],
+        name: [],
+        desc: [],
+        program: [],
+        output: [],
+        input: [],
+        runnable: [],
+        message: '',
+        reason: ''
+    };
+
+    let query = "select program_details.id as prog_det_id, program_details.isrunnable as runnable, program_details.code, programs.program_name, programs.program_description, categories.cat_name, program_ios.input, program_ios.output from program_details INNER JOIN languages ON  languages.id=program_details.lang_id INNER JOIN programs ON program_details.prog_id=programs.id INNER JOIN categories ON categories.id=programs.program_category INNER JOIN program_ios ON program_ios.prog_id=program_details.id where languages.lang_name=?";
+    conection.query(query, [language], function (err, result, fields) {
+        if(err){
+            send_data.language = "";
+            send_data.message = "FAILURE";
+            send_data.reason = err;
+            return res.status(500).send(send_data);
         }
-        let send_data = {
-            language: '',
-            category: [],
-            name: [],
-            desc: [],
-            program: [],
-            output: [],
-            input: [],
-            runnable: [],
-            message: '',
-            reason: ''
-        };
-        result.forEach(function(element) {
-            send_data.program.push(element.code)
-            send_data.input.push(element.code);
-            send_data.output.push(element.exampleoutput);
-            send_data.runnable.push(element.isrunnable);
-        });
+        for (var i = 0; i < result.length; i++) {
+            var row = result[i];
+            send_data.category.push(row.cat_name);
+            send_data.name.push(row.program_name);
+            send_data.desc.push(row.program_description);
+            send_data.program.push(row.code);
+            send_data.output.push(row.output);
+            send_data.input.push(row.input);
+            send_data.runnable.push(row.runnable);
+        }
         res.status(200).send(send_data);
     });
 });
