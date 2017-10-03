@@ -1,0 +1,120 @@
+---
+swagger: "2.0"
+info:
+  description: "Api documentation for backend task"
+  version: "1.0.0"
+  title: "Backend"
+#   termsOfService: "http://swagger.io/terms/"
+#   contact:
+#     email: "apiteam@swagger.io"
+#   license:
+#     name: "Apache 2.0"
+#     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:3000"
+basePath: "/"
+tags:
+- name: "Program"
+  description: "Everything about Program"
+schemes:
+- "http"
+paths:
+  /program/getprogram:
+    get:
+      tags:
+      - "Program"
+      summary: "Get program details"
+      description: "Get program details"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "versionno"
+        in: "query"
+        description: "Version number"
+        required: true
+        type: "string"
+      - name: "appname"
+        in: "query"
+        description: "Application name"
+        required: true
+        type: "string"
+      - name: "client"
+        in: "query"
+        description: "Client"
+        required: true
+        type: "string"
+      - name: "language"
+        in: "query"
+        description: "language name"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+          headers:
+            X-Rate-Limit:
+              type: "integer"
+              format: "int32"
+              description: "calls per hour allowed by the user"
+            X-Expires-After:
+              type: "string"
+              format: "date-time"
+              description: "date in UTC when token expires"
+        200:
+          description: "Success"      
+        500:
+          description: "Internal Server Error"
+
+  /program/saveprogram:
+    post:
+      tags:
+      - "Program"
+      summary: "Save Program Details"
+      description: "Save program Details"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Save Program Details"
+        required: true
+        schema:
+          $ref: "#/definitions/saveProgram"
+      responses:
+        200:
+          description: "Success"
+        500:
+          description: "Internal Server Error"
+
+definitions:
+  saveProgram:
+    type: "object"
+    required:
+    - "programname"
+    - "programdescription"
+    properties:
+      programname:
+        type: "string"
+      programdescription:
+        type: "string"
+      programcategory:
+        type: "string"
+      Descimagebase64:
+        type: "string"
+      Descimageurl:
+        type: "string"
+      code:
+        type: "string"
+      exampleoutput:
+        type: "string"
+      difficultyleve:
+        type: "integer"
+        format: "int32"
+      input:
+        type: "string"
+      output:
+        type: "string"
+      Isrunnable:
+        type: "boolean"
+      

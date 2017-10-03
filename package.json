@@ -4,7 +4,9 @@
   "description": "backend assignment",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "mocha --recursive",
+    "editdocs": "swagger_swagger_fileName=api_docs/swagger.yaml swagger project edit"
   },
   "author": "Jitendra Kumar < jitendra.kumar@neosofttech.com >",
   "license": "ISC",
@@ -12,6 +14,12 @@
     "async": "^2.5.0",
     "body-parser": "^1.18.2",
     "express": "^4.15.5",
-    "mysql": "^2.14.1"
+    "js-yaml": "^3.3.0",
+    "mysql": "^2.14.1",
+    "swagger-tools": "^0.10.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "supertest": "^3.0.0"
   }
 }

@@ -4,6 +4,18 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const async = require('async');
 
+const fs = require('fs');
+const path = require('path');
+const swaggerTools = require('swagger-tools');
+const jsyaml = require('js-yaml');
+
+let spec = fs.readFileSync(path.join(__dirname,'api_docs/swagger.yaml'), 'utf8');
+let swaggerDoc = jsyaml.safeLoad(spec);
+
+swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
+    app.use(middleware.swaggerUi());
+})
+
 var conection = mysql.createConnection({
     host: process.env.host || "localhost",
     user: process.env.user || "root",
@@ -161,6 +173,48 @@ app.get('/program/getprogram', function (req, res) {
     });
 });
 
+app.get('/program/getprogramwithproc', function (req, res) {
+
+    let language = req.query.language;
+
+    let send_data = {
+        language: language,
+        category: [],
+        name: [],
+        desc: [],
+        program: [],
+        output: [],
+        input: [],
+        runnable: [],
+        message: '',
+        reason: ''
+    };
+
+    let query = "CALL getprogram(?)";
+    conection.query(query, [language], function (err, result, fields) {
+        if (err) {
+            send_data.language = "";
+            send_data.message = "FAILURE";
+            send_data.reason = err;
+            return res.status(500).send(send_data);
+        }
+        for (var i = 0; i < result[0].length; i++) {
+            var row = result[0][i];
+            send_data.category.push(row.cat_name);
+            send_data.name.push(row.program_name);
+            send_data.desc.push(row.program_description);
+            send_data.program.push(row.code);
+            send_data.output.push(row.output);
+            send_data.input.push(row.input);
+            send_data.runnable.push(row.runnable);
+        }
+        res.status(200).send(send_data);
+    });
+});
+    
+
 app.listen(3000, function () {
     console.log('App is listening on port 3000');
 });
+
+module.exports = app;
